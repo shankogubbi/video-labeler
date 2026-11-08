@@ -1,98 +1,156 @@
-import * as Device from 'expo-device';
-import { Platform, StyleSheet } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import {
+  View,
+  Text,
+  FlatList,
+  Pressable,
+  StyleSheet,
+} from "react-native";
 
-import { AnimatedIcon } from '@/components/animated-icon';
-import { HintRow } from '@/components/hint-row';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { WebBadge } from '@/components/web-badge';
-import { BottomTabInset, MaxContentWidth, Spacing } from '@/constants/theme';
+import { router, useFocusEffect } from "expo-router";
+import { useCallback, useState } from "react";
 
-function getDevMenuHint() {
-  if (Platform.OS === 'web') {
-    return <ThemedText type="small">use browser devtools</ThemedText>;
-  }
-  if (Device.isDevice) {
-    return (
-      <ThemedText type="small">
-        shake device or press <ThemedText type="code">m</ThemedText> in terminal
-      </ThemedText>
-    );
-  }
-  const shortcut = Platform.OS === 'android' ? 'cmd+m (or ctrl+m)' : 'cmd+d';
-  return (
-    <ThemedText type="small">
-      press <ThemedText type="code">{shortcut}</ThemedText>
-    </ThemedText>
-  );
-}
+import {
+  getVideos,
+  VideoRecord,
+} from "../database/database";
 
 export default function HomeScreen() {
+  const [videos, setVideos] = useState<VideoRecord[]>([]);
+
+  async function loadVideos() {
+    try {
+      const result = await getVideos();
+      setVideos(result);
+    } catch (error) {
+      console.error("Could not load videos:", error);
+    }
+  }
+
+  useFocusEffect(
+      useCallback(() => {
+        loadVideos();
+      }, [])
+  );
+
   return (
-    <ThemedView style={styles.container}>
-      <SafeAreaView style={styles.safeArea}>
-        <ThemedView style={styles.heroSection}>
-          <AnimatedIcon />
-          <ThemedText type="title" style={styles.title}>
-            Welcome to&nbsp;Expo
-          </ThemedText>
-        </ThemedView>
+      <View style={styles.container}>
+        <Text style={styles.title}>Video Library</Text>
 
-        <ThemedText type="code" style={styles.code}>
-          get started
-        </ThemedText>
+        <View style={styles.content}>
+          <FlatList
+              data={videos}
+              keyExtractor={(item) => item.id.toString()}
+              ListEmptyComponent={
+                <View style={styles.emptyContainer}>
+                  <Text style={styles.emptyTitle}>
+                    No videos yet
+                  </Text>
 
-        <ThemedView type="backgroundElement" style={styles.stepContainer}>
-          <HintRow
-            title="Try editing"
-            hint={<ThemedText type="code">src/app/index.tsx</ThemedText>}
+                  <Text style={styles.emptyText}>
+                    Add your first labelled video.
+                  </Text>
+                </View>
+              }
+              renderItem={({ item }) => (
+                  <Pressable style={styles.videoCard}>
+                    <Text style={styles.videoLabel}>
+                      {item.label}
+                    </Text>
+
+                    {item.notes ? (
+                        <Text style={styles.videoNotes}>
+                          {item.notes}
+                        </Text>
+                    ) : null}
+
+                    <Text style={styles.videoDate}>
+                      {new Date(item.created_at).toLocaleString()}
+                    </Text>
+                  </Pressable>
+              )}
           />
-          <HintRow title="Dev tools" hint={getDevMenuHint()} />
-          <HintRow
-            title="Fresh start"
-            hint={<ThemedText type="code">npm run reset-project</ThemedText>}
-          />
-        </ThemedView>
+        </View>
 
-        {Platform.OS === 'web' && <WebBadge />}
-      </SafeAreaView>
-    </ThemedView>
+        <Pressable
+            style={styles.addButton}
+            onPress={() => router.push("/add")}
+        >
+          <Text style={styles.addButtonText}>
+            + Add Video
+          </Text>
+        </Pressable>
+      </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
-    flexDirection: 'row',
+    padding: 20,
+    backgroundColor: "#f5f5f5",
   },
-  safeArea: {
-    flex: 1,
-    paddingHorizontal: Spacing.four,
-    alignItems: 'center',
-    gap: Spacing.three,
-    paddingBottom: BottomTabInset + Spacing.three,
-    maxWidth: MaxContentWidth,
-  },
-  heroSection: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    flex: 1,
-    paddingHorizontal: Spacing.four,
-    gap: Spacing.four,
-  },
+
   title: {
-    textAlign: 'center',
+    fontSize: 28,
+    fontWeight: "700",
+    marginBottom: 20,
   },
-  code: {
-    textTransform: 'uppercase',
+
+  content: {
+    flex: 1,
   },
-  stepContainer: {
-    gap: Spacing.three,
-    alignSelf: 'stretch',
-    paddingHorizontal: Spacing.three,
-    paddingVertical: Spacing.four,
-    borderRadius: Spacing.four,
+
+  emptyContainer: {
+    alignItems: "center",
+    marginTop: 100,
+  },
+
+  emptyTitle: {
+    fontSize: 22,
+    fontWeight: "600",
+  },
+
+  emptyText: {
+    marginTop: 8,
+    fontSize: 16,
+    opacity: 0.6,
+  },
+
+  videoCard: {
+    backgroundColor: "white",
+    padding: 16,
+    borderRadius: 14,
+    marginBottom: 12,
+  },
+
+  videoLabel: {
+    fontSize: 18,
+    fontWeight: "700",
+  },
+
+  videoNotes: {
+    marginTop: 6,
+    fontSize: 15,
+    opacity: 0.7,
+  },
+
+  videoDate: {
+    marginTop: 10,
+    fontSize: 12,
+    opacity: 0.5,
+  },
+
+  addButton: {
+    backgroundColor: "#111",
+    padding: 18,
+    borderRadius: 14,
+    alignItems: "center",
+    marginBottom: 10,
+  },
+
+  addButtonText: {
+    color: "white",
+    fontSize: 17,
+    fontWeight: "700",
   },
 });
