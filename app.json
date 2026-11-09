@@ -35,7 +35,14 @@
         }
       ],
       "expo-sqlite",
-      "expo-video"
+      "expo-video",
+      [
+        "expo-image-picker",
+        {
+          "cameraPermission": "Allow VideoLabeler to record videos.",
+          "microphonePermission": "Allow audio in recorded videos."
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true,
@@ -50,6 +57,14 @@
       "eas": {
         "projectId": "7ed726b6-1e36-4ff8-92ce-ee675e969dac"
       }
+    },
+    "runtimeVersion": {
+      "policy": "fingerprint"
+    },
+    "updates": {
+      "fallbackToCacheTimeout": 0,
+      "url": "https://u.expo.dev/7ed726b6-1e36-4ff8-92ce-ee675e969dac",
+      "checkAutomatically": "ON_LOAD"
     }
   }
 }

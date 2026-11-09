@@ -1,56 +1,48 @@
-# Welcome to your Expo app 👋
+# VideoLabeler
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+Record, label, and play videos stored on your device. Uninstalling the app deletes saved videos and labels.
 
-## Get started
+## Run
 
-1. Install dependencies
-
-   ```bash
-   npm install
-   ```
-
-2. Start the app
-
-   ```bash
-   npx expo start
-   ```
-
-In the output, you'll find options to open the app in a
-
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **src/app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
-
-```bash
-npm run reset-project
+```sh
+npm ci
+npx expo start --android
 ```
 
-This command will move the starter code to the **example** directory and create a blank **src/app** directory where you can start developing.
+## Check
 
-### Other setup steps
+```sh
+npx expo lint
+npx tsc --noEmit
+```
 
-- To set up ESLint for linting, run `npx expo lint`, or follow our guide on ["Using ESLint and Prettier"](https://docs.expo.dev/guides/using-eslint/)
-- If you'd like to set up unit testing, follow our guide on ["Unit Testing with Jest"](https://docs.expo.dev/develop/unit-testing/)
-- Learn more about the TypeScript setup in this template in our guide on ["Using TypeScript"](https://docs.expo.dev/guides/typescript/)
+## Build APK
 
-## Learn more
+```sh
+npx eas-cli@latest build --platform android --profile preview
+```
 
-To learn more about developing your project with Expo, look at the following resources:
+Requires EAS sign-in and access to the project.
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+## OTA updates
 
-## Join the community
+Install a new preview APK once to enable OTA updates. Older builds without expo-updates cannot receive them.
 
-Join our community of developers creating universal apps.
+```sh
+npm run build:preview
+npm run update:preview -- --message "Describe the change"
+```
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+Preview and production use separate channels. Test on preview before publishing:
+
+```sh
+npm run update:production -- --message "Describe the change"
+```
+
+The app checks at launch, downloads in the background, and applies the update on the next launch. It keeps working offline using the cached or bundled version. Updates never force a restart while you are labeling a video.
+
+Runtime fingerprints prevent updates from loading into incompatible native builds. Changes to native dependencies or configuration require a new APK or store build.
+
+To undo an update, run `npx eas-cli@latest update:rollback` and select the affected channel and runtime.
+
+Verify on a release APK: publish to its channel, open the app with a network connection, wait for the download, then close and reopen. Confirm existing videos and labels remain accessible.

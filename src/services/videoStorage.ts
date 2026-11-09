@@ -1,8 +1,5 @@
-
 import { Directory, File, Paths } from "expo-file-system";
 
-// Create the directory only when needed.
-// Avoid accessing the native filesystem during module import.
 
 function getVideoDirectory(): Directory {
 	return new Directory(Paths.document, "videos");
@@ -12,7 +9,7 @@ export function initializeVideoStorage(): void {
 	const directory = getVideoDirectory();
 
 	directory.create({
-		idempotent: true,
+		idempotent:    true,
 		intermediates: true,
 	});
 }
@@ -21,7 +18,7 @@ export function saveVideoLocally(sourceUri: string): string {
 	const directory = getVideoDirectory();
 
 	directory.create({
-		idempotent: true,
+		idempotent:    true,
 		intermediates: true,
 	});
 

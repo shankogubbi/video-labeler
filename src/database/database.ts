@@ -29,7 +29,7 @@ export async function initDatabase() {
 export async function addVideo(
 	label: string,
 	notes: string,
-	fileUri: string
+	fileUri: string,
 ) {
 	const db = await dbPromise;
 
@@ -40,7 +40,7 @@ export async function addVideo(
 		label,
 		notes,
 		fileUri,
-		new Date().toISOString()
+		new Date().toISOString(),
 	);
 
 	return result.lastInsertRowId;
@@ -52,6 +52,14 @@ export async function getVideos() {
 	return await db.getAllAsync<VideoRecord>(
 		`SELECT *
      FROM videos
-     ORDER BY created_at DESC`
+     ORDER BY created_at DESC`,
 	);
+}
+export async function updateVideo(id: number, label: string, notes: string) {
+ const db = await dbPromise;
+ await db.runAsync('UPDATE videos SET label = ?, notes = ? WHERE id = ?', label, notes, id);
+}
+export async function removeVideo(id: number) {
+ const db = await dbPromise;
+ await db.runAsync('DELETE FROM videos WHERE id = ?', id);
 }
